@@ -33,7 +33,7 @@ angular.module('beamng.apps')
         //iframe.rotatePedal(streams.engineInfo[0]);
         var speedMs = streams.electrics.wheelspeed;
         scope.speed = UiUnits.speed(speedMs);
-        console.log(scope.speed.val);
+        //console.log(scope.speed.val);
         
         iframe.conEffBerechnen(scope.speed.val);
         iframe.rotatePedal(streams.electrics.engineThrottle);

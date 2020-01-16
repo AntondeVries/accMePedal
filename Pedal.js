@@ -41,14 +41,14 @@ const mapKeys = [0, 6.75, 13.5, 20.25, 27, 33.75, 40.5, 47.25, 54, 60.75, 67.5, 
 //Pedal Positionen (x-aachse von Map)
 const pedalValues = [ 0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 ,1 ];
 
+//Berechnet aktuelle ConEff mit unterfunktionen
 document.conEffBerechnen = function(value) {
     var aktuelleGeschw = value;
-    //console.log('arraytest');
-    //console.log(efficiencyMapValues[0]);
-
+    
+    //berechnet den Index der aktuellen geschwindigkeit aus constMapKeys (y-Achse von Map) 
+    //@PARAM: Geschwindigkeit des Autos @RETURN: Index der Geschwindigkeit
     function geschwIndex(aktuelleGeschw){
         for(let i = 0; i<mapKeys.length ; i++){
-            //console.log('in geschwIndex');
             var höher = i+1;
             
             var difZuHöher = mapKeys[höher] - aktuelleGeschw;
@@ -68,12 +68,43 @@ document.conEffBerechnen = function(value) {
                     return i;
                 }
             }
-
-           
         }
     }
 
-    geschwIndex(aktuelleGeschw);
+    //ermittelt die Kennline der ConEff abhängig von der aktuellen Geschwindigkeit 
+    //@PARAM: Index der Geschwindigkeit aus geschwIndex  @RETURN: Kennline der ConEff als Array
+    function getKennlinie(geschwIndex){
+        var kennlinie = efficiencyMapValues[geschwIndex];
+        console.log('in getKennlinie');
+        return kennlinie;
+    }
+
+    // brechnet die Beste CONEFF abhängg von Geschwindigkeit 
+    //@PARAM KennlinienArray aus getKennlinie() @RETURN höchst mögliche ConEff per Geschwindigkeit
+    function getGewünschteConvEff(kennlinie){
+        var höchsterWert = 0;
+        console.log('ingetGewünschteconEff')
+        for(var i = 1; i < kennlinie.length; i++){
+            console.log(i);
+            var prevI = kennlinie[i-1];
+            var currentI = kennlinie[i];
+            if (currentI < prevI ){
+                if(höchsterWert < prevI )
+                höchsterWert = prevI;
+                
+            } else if(currentI == prevI ){
+                if(höchsterWert < prevI ){
+                    höchsterWert = prevI;
+                }
+            }
+        }
+        console.log(höchsterWert);
+        return höchsterWert;
+    }
+
+    //funktionsaufrufe
+    getGewünschteConvEff(getKennlinie(geschwIndex(aktuelleGeschw)));
+    //geschwIndex(aktuelleGeschw);
 
 
 }
