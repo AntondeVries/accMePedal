@@ -23,22 +23,20 @@ angular.module('beamng.apps')
 
       element.on('load', function(){
         iframe = element[0].contentDocument;
-        //iframe.drawPedal();
-        console.log('hier10'); 
+        
 
       });
 
       scope.$on('streamsUpdate', function (event, streams) {
-        //iframe.drawBereich();
-        //iframe.rotatePedal(streams.engineInfo[0]);
+        
         var speedMs = streams.electrics.wheelspeed;
         scope.speed = UiUnits.speed(speedMs);
-        //console.log(scope.speed.val);
+       
         
         iframe.conEffBerechnen(scope.speed.val);
         iframe.rotatePedal(streams.electrics.engineThrottle);
-        //console.log(`throttle state ${streams.electrics.throttle}`);
-        //console.log('overflow:hidden4');
+        iframe.rotateIntervall();
+        
         
         
       });

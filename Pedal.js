@@ -7,7 +7,9 @@ var bBox = svg.getBBox();
 var bBoxH = bBox.height.toString();
 var bBoxW = bBox.width.toString();
 var canvas = document.getElementById('pedalcanvas');
-var context = canvas.getContext('2d');
+var gewünschtePedalPos;
+//var context = canvas.getContext('2d');
+
 
 //ConvEfficiency 
 const efficiencyMapValues = [
@@ -44,6 +46,8 @@ const pedalValues = [ 0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 ,1
 //Berechnet aktuelle ConEff mit unterfunktionen
 document.conEffBerechnen = function(value) {
     var aktuelleGeschw = value;
+    var kennlinie;
+    var höchsterWert;
     
     //berechnet den Index der aktuellen geschwindigkeit aus constMapKeys (y-Achse von Map) 
     //@PARAM: Geschwindigkeit des Autos @RETURN: Index der Geschwindigkeit
@@ -54,17 +58,17 @@ document.conEffBerechnen = function(value) {
             var difZuHöher = mapKeys[höher] - aktuelleGeschw;
             var difZuIndex = aktuelleGeschw - mapKeys[i];
             if (aktuelleGeschw > 135){
-                console.log(20);
+                
                 return 20;
             }
 
             if (aktuelleGeschw< mapKeys[i+1] && aktuelleGeschw > mapKeys[i] ){
-                console.log('in if')
+                
                 if (difZuHöher < difZuIndex){
-                    console.log(höher);
+                    
                     return höher;
                 } else if( difZuIndex < difZuHöher){
-                    console.log(i);
+                    
                     return i;
                 }
             }
@@ -74,18 +78,18 @@ document.conEffBerechnen = function(value) {
     //ermittelt die Kennline der ConEff abhängig von der aktuellen Geschwindigkeit 
     //@PARAM: Index der Geschwindigkeit aus geschwIndex  @RETURN: Kennline der ConEff als Array
     function getKennlinie(geschwIndex){
-        var kennlinie = efficiencyMapValues[geschwIndex];
-        console.log('in getKennlinie');
+        kennlinie = efficiencyMapValues[geschwIndex];
+        
         return kennlinie;
     }
 
     // brechnet die Beste CONEFF abhängg von Geschwindigkeit 
     //@PARAM KennlinienArray aus getKennlinie() @RETURN höchst mögliche ConEff per Geschwindigkeit
     function getGewünschteConvEff(kennlinie){
-        var höchsterWert = 0;
-        console.log('ingetGewünschteconEff')
+        höchsterWert = 0;
+        
         for(var i = 1; i < kennlinie.length; i++){
-            console.log(i);
+            
             var prevI = kennlinie[i-1];
             var currentI = kennlinie[i];
             if (currentI < prevI ){
@@ -98,12 +102,18 @@ document.conEffBerechnen = function(value) {
                 }
             }
         }
-        console.log(höchsterWert);
-        return höchsterWert;
+
+        //console.log(kennlinie.indexOf(höchsterWert));
+        return kennlinie.indexOf(höchsterWert);
+    }
+
+    function getGewünschtePedalPos(gewünschteConEffIndex){
+        return pedalValues[gewünschteConEffIndex];
     }
 
     //funktionsaufrufe
-    getGewünschteConvEff(getKennlinie(geschwIndex(aktuelleGeschw)));
+   gewünschtePedalPos =  getGewünschtePedalPos(getGewünschteConvEff(getKennlinie(geschwIndex(aktuelleGeschw))));
+   //console.log(gewünschtePedalPos);
     //geschwIndex(aktuelleGeschw);
 
 
@@ -118,5 +128,28 @@ document.rotatePedal = function(value){
     }
     img.style.transform = `rotate(${angle}deg) `;
     //console.log(angle);
+}
+
+document.rotateIntervall = function(){
+    var fensterBreite = img.clientWidth;
+    var fensterHöhe = img.clientHeight;
+    canvas.width = fensterBreite;
+    canvas.height = fensterHöhe;
+    var x = (fensterBreite / 100) * 82;
+    var y = (fensterHöhe / 100) * 79;
+    var xe = (fensterBreite/100) *22;
+    console.log( x +"," + y);
+
+    var context = canvas.getContext('2d');
+
+    context.beginPath();
+    context.fillStyle = "#F00";
+    context.moveTo(x , y);
+    context.lineTo(xe,y);
+    context.lineTo(400,100);
+    context.fill();
+    context.closePath();
+
+    
 }
 
