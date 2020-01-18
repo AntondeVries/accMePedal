@@ -35,10 +35,6 @@ angular.module('beamng.apps')
         iframe.rotatePedal(streams.electrics.engineThrottle);
         
         iframe.conEffBerechnen(scope.speed.val);
-        
-        
-        
-        
       });
     }
   };
