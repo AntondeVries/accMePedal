@@ -8,6 +8,8 @@ var bBoxH = bBox.height.toString();
 var bBoxW = bBox.width.toString();
 var canvas = document.getElementById('pedalcanvas');
 var gewünschtePedalPos;
+var conEffSpanne = 1;
+var geschwIndex;
 //var context = canvas.getContext('2d');
 
 
@@ -59,6 +61,7 @@ document.conEffBerechnen = function(value) {
             var difZuIndex = aktuelleGeschw - mapKeys[i];
             if (aktuelleGeschw > 135){
                 
+                geschwIndex = 20;
                 return 20;
             }
 
@@ -66,9 +69,11 @@ document.conEffBerechnen = function(value) {
                 
                 if (difZuHöher < difZuIndex){
                     
+                    geschwIndex = höher;
                     return höher;
                 } else if( difZuIndex < difZuHöher){
                     
+                    geschwIndex = i;
                     return i;
                 }
             }
@@ -77,7 +82,7 @@ document.conEffBerechnen = function(value) {
 
     //ermittelt die Kennline der ConEff abhängig von der aktuellen Geschwindigkeit 
     //@PARAM: Index der Geschwindigkeit aus geschwIndex  @RETURN: Kennline der ConEff als Array
-    function getKennlinie(geschwIndex){
+    function getKennlinie(value){
         kennlinie = efficiencyMapValues[geschwIndex];
         
         return kennlinie;
@@ -97,6 +102,7 @@ document.conEffBerechnen = function(value) {
                 höchsterWert = prevI;
                 
             } else if(currentI == prevI ){
+                
                 if(höchsterWert < prevI ){
                     höchsterWert = prevI;
                 }
@@ -110,12 +116,12 @@ document.conEffBerechnen = function(value) {
     function getGewünschtePedalPos(gewünschteConEffIndex){
         return pedalValues[gewünschteConEffIndex];
     }
-
+       
     //funktionsaufrufe
    gewünschtePedalPos =  getGewünschtePedalPos(getGewünschteConvEff(getKennlinie(geschwIndex(aktuelleGeschw))));
-   //console.log(gewünschtePedalPos);
-    //geschwIndex(aktuelleGeschw);
-
+   
+   rotateCanvas(gewünschtePedalPos);
+   zeichneIntervall(geschwIndex);
 
 }
 
@@ -130,26 +136,114 @@ document.rotatePedal = function(value){
     //console.log(angle);
 }
 
-document.rotateIntervall = function(){
+function zeichneIntervall(value){
     var fensterBreite = img.clientWidth;
     var fensterHöhe = img.clientHeight;
     canvas.width = fensterBreite;
     canvas.height = fensterHöhe;
-    var x = (fensterBreite / 100) * 82;
-    var y = (fensterHöhe / 100) * 79;
-    var xe = (fensterBreite/100) *22;
-    console.log( x +"," + y);
+    var ursprung = [(fensterBreite / 100) * 82, (fensterHöhe / 100) * 79];
+   
+    var eckeOben = [(fensterBreite/100) * 47.4,(fensterHöhe / 100) * 17];
+    var eckeObenVektor = [eckeOben[0]-ursprung[0], eckeOben[1]-ursprung[1]];
+
+    var länge = Math.sqrt(Math.pow(ursprung[0] - eckeOben[0],2)+ Math.pow(ursprung[1]-eckeOben[1],2));
+    var angle;
+
+    switch(value){
+        case 0:
+            angle = -51;
+            break;
+        case 1: 
+            angle = -51;
+            break;
+        case 2:
+            angle = -5;
+            break;
+        case 3:
+            angle = -5;
+            break;
+        case 4:
+            angle = -5;
+            break;
+        case 5:
+            angle = -5;
+            break;
+        case 6:
+            angle = -20; 
+            break;
+        case 7: 
+            angle = -10
+            break;
+        case 8: 
+            angle = -10;
+            break;
+        case 9: 
+            angle =-10;
+            break;
+        case 10:
+            angle =-15;
+            break;
+        case 11: 
+            angle = -10;
+            break;
+        case 12: 
+            angle = -10;
+            break;
+        case 13:
+            angle = -10;
+             break;
+        case 14: 
+            angle = -10;
+            break;
+        case 15: 
+            angle = -10;
+            break;
+        case 16: 
+            angle = -10;
+            break;
+        case 17: 
+            angle = -5;
+            break;
+        case 18:
+            angle = -51;
+            break;
+        case 19: 
+            angle = -51;
+            break;
+        case 20:
+            angle = -51;
+            break;
+    }
+
+    function degrees_to_radians(degrees){
+        var pi = Math.PI;
+        return degrees * (pi/180);
+    }
+          
+    var eckeUntenVektor = [Math.cos(degrees_to_radians(angle))* eckeObenVektor[0] - Math.sin(degrees_to_radians(angle))* eckeObenVektor[1], Math.sin(degrees_to_radians(angle))*eckeObenVektor[0] + Math.cos(degrees_to_radians(angle))*eckeObenVektor[1]];
+    var eckeUnten = [ursprung[0]+eckeUntenVektor[0],ursprung[1] + eckeUntenVektor[1]];
 
     var context = canvas.getContext('2d');
 
     context.beginPath();
     context.fillStyle = "#F00";
-    context.moveTo(x , y);
-    context.lineTo(xe,y);
-    context.lineTo(400,100);
+    
+    context.moveTo(ursprung[0] , ursprung[1]);
+    context.lineTo(eckeOben[0],eckeOben[1]);
+    context.lineTo(eckeUnten[0],eckeUnten[1]);
+    
     context.fill();
     context.closePath();
 
-    
+}
+
+function rotateCanvas(value){
+    var angle = 0;
+    var multiplikator = -53;
+    var angle = value * multiplikator;
+    if (value == 1){
+        angle = -53;  
+    }
+    canvas.style.transform = `rotate(${angle}deg) `;
 }
 
