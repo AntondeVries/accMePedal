@@ -141,20 +141,28 @@ function zeichneIntervall(value){
     var fensterHöhe = img.clientHeight;
     canvas.width = fensterBreite;
     canvas.height = fensterHöhe;
+
+    
     var ursprung = [(fensterBreite / 100) * 82, (fensterHöhe / 100) * 79];
-   
-    var eckeOben = [(fensterBreite/100) * 47.4,(fensterHöhe / 100) * 17];
+    // alt : [(fensterBreite/100) * 47.4,(fensterHöhe / 100) * 17];
+    var eckeOben = [(fensterBreite/100) * 42.4,(fensterHöhe / 100) * 6.375];
     var eckeObenVektor = [eckeOben[0]-ursprung[0], eckeOben[1]-ursprung[1]];
+    console.log(fensterBreite);
+    console.log(fensterHöhe);
+
+    console.log(ursprung);
+    console.log(eckeOben);
+    console.log(länge);
 
     var länge = Math.sqrt(Math.pow(ursprung[0] - eckeOben[0],2)+ Math.pow(ursprung[1]-eckeOben[1],2));
     var angle;
 
     switch(value){
         case 0:
-            angle = -51;
+            angle = 0;
             break;
         case 1: 
-            angle = -51;
+            angle = 0;
             break;
         case 2:
             angle = -5;
@@ -205,13 +213,13 @@ function zeichneIntervall(value){
             angle = -5;
             break;
         case 18:
-            angle = -51;
+            angle = 0;
             break;
         case 19: 
-            angle = -51;
+            angle = 0;
             break;
         case 20:
-            angle = -51;
+            angle = 0;
             break;
     }
 
@@ -226,7 +234,7 @@ function zeichneIntervall(value){
     var context = canvas.getContext('2d');
 
     context.beginPath();
-    context.fillStyle = "#F00";
+    context.fillStyle = "#26a699";
     
     context.moveTo(ursprung[0] , ursprung[1]);
     context.lineTo(eckeOben[0],eckeOben[1]);
