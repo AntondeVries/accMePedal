@@ -127,11 +127,14 @@ document.conEffBerechnen = function(value) {
 
 document.rotatePedal = function(value){
     var angle = 0;
+   
+    
     var multiplikator = -53;
     var angle = value * multiplikator;
     if (value == 1){
         angle = -53;  
     }
+    
     img.style.transform = `rotate(${angle}deg) `;
     //console.log(angle);
 }
@@ -147,12 +150,7 @@ function zeichneIntervall(value){
     // alt : [(fensterBreite/100) * 47.4,(fensterHöhe / 100) * 17];
     var eckeOben = [(fensterBreite/100) * 42.4,(fensterHöhe / 100) * 6.375];
     var eckeObenVektor = [eckeOben[0]-ursprung[0], eckeOben[1]-ursprung[1]];
-    console.log(fensterBreite);
-    console.log(fensterHöhe);
-
-    console.log(ursprung);
-    console.log(eckeOben);
-    console.log(länge);
+   
 
     var länge = Math.sqrt(Math.pow(ursprung[0] - eckeOben[0],2)+ Math.pow(ursprung[1]-eckeOben[1],2));
     var angle;
@@ -246,12 +244,16 @@ function zeichneIntervall(value){
 }
 
 function rotateCanvas(value){
+    
     var angle = 0;
+    
     var multiplikator = -53;
     var angle = value * multiplikator;
+    
     if (value == 1){
         angle = -53;  
     }
+    
     canvas.style.transform = `rotate(${angle}deg) `;
+    
 }
-
