@@ -24,7 +24,6 @@ angular.module('beamng.apps')
       element.on('load', function(){
         iframe = element[0].contentDocument;
         
-
       });
 
       scope.$on('streamsUpdate', function (event, streams) {

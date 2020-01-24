@@ -1,17 +1,21 @@
+/**
+ * !READ ME FIRST!
+ * Pedal ist noch nicht zu 100% fertig, einige Anpassungen müssn noch gemacht werden: 
+ * TODO: 
+ *      1) LINE 149 : Winkel des Dreiecks genauer betimmen (ohne switch case) 
+ *      2) LINE 51 : ConEff anders berechnen, aktuell zu sehr von geschw. Abhängig (Nutzer kann optimalbereich nie erreichen)
+ *      3) General: HintergrundImg anpassen, sodass es nicht über das Interface hinausragt
+ *      4) LINE 135, 250 : geringe Prio, Rotate Funktionen zusammenfassen
+ */
 'use strict';
-// Root element 
-const root = document.getElementsByTagName('svg')[0];
+
 var img = document.getElementById("pedalImg");
 var svg = document.getElementById("svg");
-var bBox = svg.getBBox();
-var bBoxH = bBox.height.toString();
-var bBoxW = bBox.width.toString();
 var canvas = document.getElementById('pedalcanvas');
+
 var gewünschtePedalPos;
 var conEffSpanne = 1;
 var geschwIndex;
-//var context = canvas.getContext('2d');
-
 
 //ConvEfficiency 
 const efficiencyMapValues = [
@@ -38,15 +42,16 @@ const efficiencyMapValues = [
     [0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7]
 ];
 
-
 //Geschwindigkeiten (y-achse von Map)
 const mapKeys = [0, 6.75, 13.5, 20.25, 27, 33.75, 40.5, 47.25, 54, 60.75, 67.5, 74.25, 81, 87.75, 94.5, 101.25, 108, 114.75, 121.5, 128.25, 135];
 
 //Pedal Positionen (x-aachse von Map)
 const pedalValues = [ 0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 ,1 ];
 
-//Berechnet aktuelle ConEff mit unterfunktionen
+//Berechnet aktuelle ConEff mit unterfunktionen, wird aufgerufen in App.js 
+//@PARAM: Geschwindigkeit
 document.conEffBerechnen = function(value) {
+
     var aktuelleGeschw = value;
     var kennlinie;
     var höchsterWert;
@@ -55,24 +60,22 @@ document.conEffBerechnen = function(value) {
     //@PARAM: Geschwindigkeit des Autos @RETURN: Index der Geschwindigkeit
     function geschwIndex(aktuelleGeschw){
         for(let i = 0; i<mapKeys.length ; i++){
+
             var höher = i+1;
-            
             var difZuHöher = mapKeys[höher] - aktuelleGeschw;
             var difZuIndex = aktuelleGeschw - mapKeys[i];
+
             if (aktuelleGeschw > 135){
-                
                 geschwIndex = 20;
                 return 20;
             }
 
             if (aktuelleGeschw< mapKeys[i+1] && aktuelleGeschw > mapKeys[i] ){
-                
                 if (difZuHöher < difZuIndex){
-                    
                     geschwIndex = höher;
                     return höher;
-                } else if( difZuIndex < difZuHöher){
-                    
+
+                } else if(difZuIndex < difZuHöher){
                     geschwIndex = i;
                     return i;
                 }
@@ -109,10 +112,11 @@ document.conEffBerechnen = function(value) {
             }
         }
 
-        //console.log(kennlinie.indexOf(höchsterWert));
         return kennlinie.indexOf(höchsterWert);
     }
 
+    //Ermittlet gewünschtePedalPosition
+    //@PARAM: Index der höchsten Con Eff @RETURN: GewünschtePedalPos (als wert zwischen 0 und 1);
     function getGewünschtePedalPos(gewünschteConEffIndex){
         return pedalValues[gewünschteConEffIndex];
     }
@@ -125,36 +129,28 @@ document.conEffBerechnen = function(value) {
 
 }
 
+//Rotiert Pedal, wird in App.js aufgerufen
+//@Param: engineThrottle (Wert zwischen 0 - 1)
+// -53 ist Maximalwert der Rotation
 document.rotatePedal = function(value){
-    var angle = 0;
-   
-    
+    var angle;
     var multiplikator = -53;
     var angle = value * multiplikator;
-    if (value == 1){
-        angle = -53;  
-    }
-    
+   
     img.style.transform = `rotate(${angle}deg) `;
-    //console.log(angle);
 }
 
+//zeichnet Intervall und bestimmt dessen Größe
+//@PARAM: Index der Geschwindigkeit, benötigt um Größe zu ermitteln
 function zeichneIntervall(value){
     var fensterBreite = img.clientWidth;
     var fensterHöhe = img.clientHeight;
     canvas.width = fensterBreite;
     canvas.height = fensterHöhe;
 
-    
-    var ursprung = [(fensterBreite / 100) * 82, (fensterHöhe / 100) * 79];
-    // alt : [(fensterBreite/100) * 47.4,(fensterHöhe / 100) * 17];
-    var eckeOben = [(fensterBreite/100) * 42.4,(fensterHöhe / 100) * 6.375];
-    var eckeObenVektor = [eckeOben[0]-ursprung[0], eckeOben[1]-ursprung[1]];
-   
-
-    var länge = Math.sqrt(Math.pow(ursprung[0] - eckeOben[0],2)+ Math.pow(ursprung[1]-eckeOben[1],2));
     var angle;
-
+    //Hardcode: Bestimmt inneren Winkel des Dreiecks
+    //TODO: Werte verbessern, eventuell Algorithmus schreiben
     switch(value){
         case 0:
             angle = 0;
@@ -221,14 +217,20 @@ function zeichneIntervall(value){
             break;
     }
 
+    // Punkte und Verktoren
+    var ursprung = [(fensterBreite / 100) * 82, (fensterHöhe / 100) * 79];
+    var eckeOben = [(fensterBreite/100) * 42.4,(fensterHöhe / 100) * 6.375];
+    var eckeObenVektor = [eckeOben[0]-ursprung[0], eckeOben[1]-ursprung[1]];
+    var eckeUntenVektor = [Math.cos(degrees_to_radians(angle))* eckeObenVektor[0] - Math.sin(degrees_to_radians(angle))* eckeObenVektor[1], Math.sin(degrees_to_radians(angle))*eckeObenVektor[0] + Math.cos(degrees_to_radians(angle))*eckeObenVektor[1]];
+    var eckeUnten = [ursprung[0]+eckeUntenVektor[0],ursprung[1] + eckeUntenVektor[1]];
+
+    //umrechnung degrees to radians 
     function degrees_to_radians(degrees){
         var pi = Math.PI;
         return degrees * (pi/180);
     }
           
-    var eckeUntenVektor = [Math.cos(degrees_to_radians(angle))* eckeObenVektor[0] - Math.sin(degrees_to_radians(angle))* eckeObenVektor[1], Math.sin(degrees_to_radians(angle))*eckeObenVektor[0] + Math.cos(degrees_to_radians(angle))*eckeObenVektor[1]];
-    var eckeUnten = [ursprung[0]+eckeUntenVektor[0],ursprung[1] + eckeUntenVektor[1]];
-
+   //Ab hier wird endlich gezeichnet
     var context = canvas.getContext('2d');
 
     context.beginPath();
@@ -243,16 +245,12 @@ function zeichneIntervall(value){
 
 }
 
+//Rotiert das Canvas und somit auch den optimalen Bereich
+//@PARAM: Gewünschte Pedal Position
 function rotateCanvas(value){
-    
-    var angle = 0;
-    
+    var angle;
     var multiplikator = -53;
     var angle = value * multiplikator;
-    
-    if (value == 1){
-        angle = -53;  
-    }
     
     canvas.style.transform = `rotate(${angle}deg) `;
     
