@@ -4,8 +4,16 @@
  * TODO: 
  *      1) LINE 149 : Winkel des Dreiecks genauer betimmen (ohne switch case) 
  *      2) LINE 51 : ConEff anders berechnen, aktuell zu sehr von geschw. Abhängig (Nutzer kann optimalbereich nie erreichen)
+ *                      Lösbar durch:        Durchschnittswert für Beschleunigung von 0 zu 50 
+ *                                           Zeitgetriggert?
+ *                                           Ableitungsfunktion von ConEff
+ *                      
  *      3) General: HintergrundImg anpassen, sodass es nicht über das Interface hinausragt
  *      4) LINE 135, 250 : geringe Prio, Rotate Funktionen zusammenfassen
+ *      5) Bei Pedal anzeigen nichts anzeigen anzeigen
+ *      6) Bereich nicht springen, sondern bewegen.
+ * 
+ *       2 , 6 , 1 , 5 , 3 IST EIN MUSS 
  */
 'use strict';
 
@@ -16,6 +24,7 @@ var canvas = document.getElementById('pedalcanvas');
 var gewünschtePedalPos;
 var conEffSpanne = 1;
 var geschwIndex;
+var dreieckAngle;
 
 //ConvEfficiency 
 const efficiencyMapValues = [
@@ -58,7 +67,7 @@ document.conEffBerechnen = function(value) {
     
     //berechnet den Index der aktuellen geschwindigkeit aus constMapKeys (y-Achse von Map) 
     //@PARAM: Geschwindigkeit des Autos @RETURN: Index der Geschwindigkeit
-    function geschwIndex(aktuelleGeschw){
+    function getGeschwIndex(aktuelleGeschw){
         for(let i = 0; i<mapKeys.length ; i++){
 
             var höher = i+1;
@@ -95,23 +104,13 @@ document.conEffBerechnen = function(value) {
     //@PARAM KennlinienArray aus getKennlinie() @RETURN höchst mögliche ConEff per Geschwindigkeit
     function getGewünschteConvEff(kennlinie){
         höchsterWert = 0;
-        
-        for(var i = 1; i < kennlinie.length; i++){
-            
-            var prevI = kennlinie[i-1];
-            var currentI = kennlinie[i];
-            if (currentI < prevI ){
-                if(höchsterWert < prevI )
-                höchsterWert = prevI;
-                
-            } else if(currentI == prevI ){
-                
-                if(höchsterWert < prevI ){
-                    höchsterWert = prevI;
-                }
-            }
-        }
 
+        function getMaxOfArray(numArray) {
+            return Math.max.apply(null, numArray);
+        }
+        
+        höchsterWert = getMaxOfArray(kennlinie);
+        
         return kennlinie.indexOf(höchsterWert);
     }
 
@@ -120,14 +119,59 @@ document.conEffBerechnen = function(value) {
     function getGewünschtePedalPos(gewünschteConEffIndex){
         return pedalValues[gewünschteConEffIndex];
     }
-       
-    //funktionsaufrufe
-   gewünschtePedalPos =  getGewünschtePedalPos(getGewünschteConvEff(getKennlinie(geschwIndex(aktuelleGeschw))));
-   
-   rotateCanvas(gewünschtePedalPos);
-   zeichneIntervall(geschwIndex);
 
+
+
+    gewünschtePedalPos =  getGewünschtePedalPos(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
+    //funktionsaufrufe
+    if (aktuelleGeschw <= mapKeys[8]){
+        gewünschtePedalPos = 0.35;
+        zeichneIntervall(8);
+        rotateCanvas(gewünschtePedalPos);
+        //console.log("hier");
+        //console.log(geschwIndex);
+        //console.log(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
+        //console.log(gewünschtePedalPos);
+         
+    }else if (aktuelleGeschw > mapKeys[8] && aktuelleGeschw <= mapKeys[10]){
+        zeichneIntervall(geschwIndex);
+        smoothRotationCanvas(gewünschtePedalPos);
+        //console.log(gewünschtePedalPos);
+
+    }else  if (aktuelleGeschw > mapKeys[10] && aktuelleGeschw <= mapKeys[13]){
+        gewünschtePedalPos = 0.58;
+        zeichneIntervall(geschwIndex);
+        rotateCanvas(gewünschtePedalPos);
+       //console.log("hier");
+        //console.log(geschwIndex);
+        //console.log(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
+        //console.log(gewünschtePedalPos);
+
+    }else if ( aktuelleGeschw > mapKeys[13] && aktuelleGeschw <= mapKeys[15]) {
+    zeichneIntervall(geschwIndex);
+    smoothRotationCanvas(gewünschtePedalPos);
+    //console.log("hier");
+        //console.log(geschwIndex);
+        //console.log(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
+        //console.log(gewünschtePedalPos);
+    }else if(aktuelleGeschw > mapKeys[15]) {
+        
+        gewünschtePedalPos = 0.9;
+        zeichneIntervall(geschwIndex);
+        rotateCanvas(gewünschtePedalPos);
+    }
+
+   function smoothRotationCanvas(value){
+        var maxAbstand = 6.75;
+        var aktuellAbstand =  aktuelleGeschw - mapKeys[geschwIndex];
+        var aktuellAbstandinPr = (aktuellAbstand / maxAbstand) / 10; 
+        var rotationAngle = value + aktuellAbstandinPr;
+        rotateCanvas(rotationAngle);
+    }
+ 
 }
+
+
 
 //Rotiert Pedal, wird in App.js aufgerufen
 //@Param: engineThrottle (Wert zwischen 0 - 1)
@@ -148,10 +192,10 @@ function zeichneIntervall(value){
     canvas.width = fensterBreite;
     canvas.height = fensterHöhe;
 
-    var angle;
+    var angle = -10;
     //Hardcode: Bestimmt inneren Winkel des Dreiecks
     //TODO: Werte verbessern, eventuell Algorithmus schreiben
-    switch(value){
+    /**switch(value){
         case 0:
             angle = 0;
             break;
@@ -215,7 +259,8 @@ function zeichneIntervall(value){
         case 20:
             angle = 0;
             break;
-    }
+    }*/
+    dreieckAngle = angle;
 
     // Punkte und Verktoren
     var ursprung = [(fensterBreite / 100) * 82, (fensterHöhe / 100) * 79];
@@ -248,9 +293,12 @@ function zeichneIntervall(value){
 //Rotiert das Canvas und somit auch den optimalen Bereich
 //@PARAM: Gewünschte Pedal Position
 function rotateCanvas(value){
+
     var angle;
     var multiplikator = -53;
-    var angle = value * multiplikator;
+    
+    var angle = value * multiplikator - dreieckAngle /2;
+    
     
     canvas.style.transform = `rotate(${angle}deg) `;
     
