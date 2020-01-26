@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        @font-face {
+            font-family: 'Roboto';
+            font-weight:400;
+            src: url(fonts/Roboto-Thin.ttf);
+        }
         body{
             overflow: hidden;
             padding:0;
@@ -30,6 +35,18 @@
             top:0;
             left:0;  
         }
+        body > text{
+            text-align: center;
+            font-family:'Roboto-Thin', 'Roboto';
+            z-index: 5;
+            position:fixed;
+            top:50%;
+            left:50%;
+            width:200px;
+            margin-left: -100px;
+            color: white;
+            
+        }
     </style>
     <title>Pedal</title>
 </head>
@@ -56,6 +73,7 @@
     <img id = "hintergrundImg" width = "100%" height= "100%" src = "hintergrund.svg" alt = "UPS" >
     <img id = "ballImg" width = "100%" height= "100%" src = "ball.svg" alt = "UPS">
     <img id = "pedalImg" width = "100%" height= "100%" src = "zeiger.svg" alt = "UPS">
+    <text id = "textId"> Pedal released </text>
 
     <script src = "Pedal.js"> </script>
 </body>

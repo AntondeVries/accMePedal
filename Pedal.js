@@ -20,6 +20,7 @@
 var img = document.getElementById("pedalImg");
 var svg = document.getElementById("svg");
 var canvas = document.getElementById('pedalcanvas');
+var text = document.getElementById('textId');
 
 var gewünschtePedalPos;
 var conEffSpanne = 1;
@@ -70,7 +71,13 @@ document.conEffBerechnen = function(value) {
     function getGeschwIndex(aktuelleGeschw){
         for(let i = 0; i<mapKeys.length ; i++){
 
-            var höher = i+1;
+            var range = 3.375;
+            var abstand = Math.abs(aktuelleGeschw - mapKeys[i]);
+            if (abstand <= range){
+                geschwIndex = i;
+                return geschwIndex;
+            }
+            /*var höher = i+1;
             var difZuHöher = mapKeys[höher] - aktuelleGeschw;
             var difZuIndex = aktuelleGeschw - mapKeys[i];
 
@@ -88,14 +95,14 @@ document.conEffBerechnen = function(value) {
                     geschwIndex = i;
                     return i;
                 }
-            }
+            }*/
         }
     }
 
     //ermittelt die Kennline der ConEff abhängig von der aktuellen Geschwindigkeit 
     //@PARAM: Index der Geschwindigkeit aus geschwIndex  @RETURN: Kennline der ConEff als Array
     function getKennlinie(value){
-        kennlinie = efficiencyMapValues[geschwIndex];
+        kennlinie = efficiencyMapValues[value];
         
         return kennlinie;
     }
@@ -123,37 +130,27 @@ document.conEffBerechnen = function(value) {
 
 
     gewünschtePedalPos =  getGewünschtePedalPos(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
+    //console.log("0 " + getKennlinie(geschwIndex));
+    //console.log("2 " + getKennlinie(2));
     //funktionsaufrufe
     if (aktuelleGeschw <= mapKeys[8]){
         gewünschtePedalPos = 0.35;
         zeichneIntervall(8);
         rotateCanvas(gewünschtePedalPos);
-        //console.log("hier");
-        //console.log(geschwIndex);
-        //console.log(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
-        //console.log(gewünschtePedalPos);
-         
+        
     }else if (aktuelleGeschw > mapKeys[8] && aktuelleGeschw <= mapKeys[10]){
         zeichneIntervall(geschwIndex);
         smoothRotationCanvas(gewünschtePedalPos);
-        //console.log(gewünschtePedalPos);
-
+    
     }else  if (aktuelleGeschw > mapKeys[10] && aktuelleGeschw <= mapKeys[13]){
         gewünschtePedalPos = 0.58;
         zeichneIntervall(geschwIndex);
         rotateCanvas(gewünschtePedalPos);
-       //console.log("hier");
-        //console.log(geschwIndex);
-        //console.log(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
-        //console.log(gewünschtePedalPos);
-
-    }else if ( aktuelleGeschw > mapKeys[13] && aktuelleGeschw <= mapKeys[15]) {
+    
+    }else if (aktuelleGeschw > mapKeys[13] && aktuelleGeschw <= mapKeys[15]) {
     zeichneIntervall(geschwIndex);
     smoothRotationCanvas(gewünschtePedalPos);
-    //console.log("hier");
-        //console.log(geschwIndex);
-        //console.log(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
-        //console.log(gewünschtePedalPos);
+    
     }else if(aktuelleGeschw > mapKeys[15]) {
         
         gewünschtePedalPos = 0.9;
@@ -161,12 +158,20 @@ document.conEffBerechnen = function(value) {
         rotateCanvas(gewünschtePedalPos);
     }
 
+    //what a mess
    function smoothRotationCanvas(value){
-        var maxAbstand = 6.75;
+        var maxAbstand = 6.75/2;
         var aktuellAbstand =  aktuelleGeschw - mapKeys[geschwIndex];
-        var aktuellAbstandinPr = (aktuellAbstand / maxAbstand) / 10; 
-        var rotationAngle = value + aktuellAbstandinPr;
-        rotateCanvas(rotationAngle);
+        var aktuellAbstandinPr = (aktuellAbstand / maxAbstand) * 100; 
+        var nextGeschwIndex = geschwIndex + 1 ;
+
+        //pedalPos abstände
+        var nextPedalPos = getGewünschtePedalPos(getGewünschteConvEff(getKennlinie(nextGeschwIndex)));
+        var abstand = nextPedalPos - gewünschtePedalPos;
+        var prIncrease = abstand * (aktuellAbstandinPr / 100);
+        var newPedalPos = gewünschtePedalPos + prIncrease;
+        
+        rotateCanvas(newPedalPos);  
     }
  
 }
@@ -184,6 +189,20 @@ document.rotatePedal = function(value){
     img.style.transform = `rotate(${angle}deg) `;
 }
 
+document.pedalReleased = function(value){
+    
+    if ( value == 0){
+        
+        img.style.visibility = "hidden"
+        canvas.style.visibility = "hidden"
+        text.style.visibility = "visible";
+    } else {
+        text.style.visibility = "hidden";
+        img.style.visibility = "visible";
+        canvas.style.visibility = "visible";
+    }
+}
+
 //zeichnet Intervall und bestimmt dessen Größe
 //@PARAM: Index der Geschwindigkeit, benötigt um Größe zu ermitteln
 function zeichneIntervall(value){
@@ -195,7 +214,7 @@ function zeichneIntervall(value){
     var angle = -10;
     //Hardcode: Bestimmt inneren Winkel des Dreiecks
     //TODO: Werte verbessern, eventuell Algorithmus schreiben
-    /**switch(value){
+    switch(value){
         case 0:
             angle = 0;
             break;
@@ -248,18 +267,18 @@ function zeichneIntervall(value){
             angle = -10;
             break;
         case 17: 
-            angle = -5;
+            angle = -10;
             break;
         case 18:
-            angle = 0;
+            angle = -10;
             break;
         case 19: 
-            angle = 0;
+            angle = -10;
             break;
         case 20:
-            angle = 0;
+            angle = -10;
             break;
-    }*/
+    }
     dreieckAngle = angle;
 
     // Punkte und Verktoren
