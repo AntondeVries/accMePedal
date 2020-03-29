@@ -1,19 +1,6 @@
 /**
  * !READ ME FIRST!
- * Pedal ist noch nicht zu 100% fertig, einige Anpassungen müssn noch gemacht werden: 
- * TODO: 
- *      1) LINE 149 : Winkel des Dreiecks genauer betimmen (ohne switch case) 
- *      2) LINE 51 : ConEff anders berechnen, aktuell zu sehr von geschw. Abhängig (Nutzer kann optimalbereich nie erreichen)
- *                      Lösbar durch:        Durchschnittswert für Beschleunigung von 0 zu 50 
- *                                           Zeitgetriggert?
- *                                           Ableitungsfunktion von ConEff
- *                      
- *      3) General: HintergrundImg anpassen, sodass es nicht über das Interface hinausragt
- *      4) LINE 135, 250 : geringe Prio, Rotate Funktionen zusammenfassen
- *      5) Bei Pedal anzeigen nichts anzeigen anzeigen
- *      6) Bereich nicht springen, sondern bewegen.
  * 
- *       2 , 6 , 1 , 5 , 3 IST EIN MUSS 
  */
 'use strict';
 
@@ -27,7 +14,7 @@ var conEffSpanne = 1;
 var geschwIndex;
 var dreieckAngle;
 
-//ConvEfficiency 
+//ConvEfficiency
 const efficiencyMapValues = [
     [0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7],
     [0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7],
@@ -58,6 +45,7 @@ const mapKeys = [0, 6.75, 13.5, 20.25, 27, 33.75, 40.5, 47.25, 54, 60.75, 67.5, 
 //Pedal Positionen (x-aachse von Map)
 const pedalValues = [ 0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 ,1 ];
 
+//Herzstück dieser Datei: 
 //Berechnet aktuelle ConEff mit unterfunktionen, wird aufgerufen in App.js 
 //@PARAM: Geschwindigkeit
 document.conEffBerechnen = function(value) {
@@ -70,32 +58,12 @@ document.conEffBerechnen = function(value) {
     //@PARAM: Geschwindigkeit des Autos @RETURN: Index der Geschwindigkeit
     function getGeschwIndex(aktuelleGeschw){
         for(let i = 0; i<mapKeys.length ; i++){
-
             var range = 3.375;
             var abstand = Math.abs(aktuelleGeschw - mapKeys[i]);
             if (abstand <= range){
                 geschwIndex = i;
                 return geschwIndex;
             }
-            /*var höher = i+1;
-            var difZuHöher = mapKeys[höher] - aktuelleGeschw;
-            var difZuIndex = aktuelleGeschw - mapKeys[i];
-
-            if (aktuelleGeschw > 135){
-                geschwIndex = 20;
-                return 20;
-            }
-
-            if (aktuelleGeschw< mapKeys[i+1] && aktuelleGeschw > mapKeys[i] ){
-                if (difZuHöher < difZuIndex){
-                    geschwIndex = höher;
-                    return höher;
-
-                } else if(difZuIndex < difZuHöher){
-                    geschwIndex = i;
-                    return i;
-                }
-            }*/
         }
     }
 
@@ -107,7 +75,7 @@ document.conEffBerechnen = function(value) {
         return kennlinie;
     }
 
-    // brechnet die Beste CONEFF abhängg von Geschwindigkeit 
+    // berechnet die Beste CONEFF abhängg von Geschwindigkeit 
     //@PARAM KennlinienArray aus getKennlinie() @RETURN höchst mögliche ConEff per Geschwindigkeit
     function getGewünschteConvEff(kennlinie){
         höchsterWert = 0;
@@ -127,11 +95,8 @@ document.conEffBerechnen = function(value) {
         return pedalValues[gewünschteConEffIndex];
     }
 
-
-
     gewünschtePedalPos =  getGewünschtePedalPos(getGewünschteConvEff(getKennlinie(getGeschwIndex(aktuelleGeschw))));
-    //console.log("0 " + getKennlinie(geschwIndex));
-    //console.log("2 " + getKennlinie(2));
+    
     //funktionsaufrufe
     if (aktuelleGeschw <= mapKeys[8]){
         gewünschtePedalPos = 0.35;
@@ -157,8 +122,8 @@ document.conEffBerechnen = function(value) {
         zeichneIntervall(geschwIndex);
         rotateCanvas(gewünschtePedalPos);
     }
-
-    //what a mess
+    //berechnet eine flüssige Rotation des Intervalls
+    //@Param: gewünschtePedalPos
    function smoothRotationCanvas(value){
         var maxAbstand = 6.75/2;
         var aktuellAbstand =  aktuelleGeschw - mapKeys[geschwIndex];
@@ -176,8 +141,6 @@ document.conEffBerechnen = function(value) {
  
 }
 
-
-
 //Rotiert Pedal, wird in App.js aufgerufen
 //@Param: engineThrottle (Wert zwischen 0 - 1)
 // -53 ist Maximalwert der Rotation
@@ -189,17 +152,23 @@ document.rotatePedal = function(value){
     img.style.transform = `rotate(${angle}deg) `;
 }
 
-document.pedalReleased = function(value){
+//Überprüft ob pedal losgelassen wurde
+//Wird in App.js aufgerufen
+//@Param: engineThrottle (Wert zwischen 0 - 1) , Geschwindigkeit
+//Wenn Pedal losgelassen bzw eine maximal Geschwindigkeit überschritten wird,
+//Wird das Pedal auf Interface ausgeblendet.
+document.pedalReleased = function(value , geschw){
     
-    if ( value == 0){
-        
-        img.style.visibility = "hidden"
+    if ( value == 0){  
         canvas.style.visibility = "hidden"
         text.style.visibility = "visible";
-    } else {
+        
+    } else if ( value !=0 && geschw < 120) {
         text.style.visibility = "hidden";
-        img.style.visibility = "visible";
         canvas.style.visibility = "visible";
+        
+    } else if( value != 0 && geschw >= 120){
+        canvas.style.visibility = "hidden";
     }
 }
 
@@ -212,8 +181,8 @@ function zeichneIntervall(value){
     canvas.height = fensterHöhe;
 
     var angle = -10;
+
     //Hardcode: Bestimmt inneren Winkel des Dreiecks
-    //TODO: Werte verbessern, eventuell Algorithmus schreiben
     switch(value){
         case 0:
             angle = 0;
@@ -288,7 +257,7 @@ function zeichneIntervall(value){
     var eckeUntenVektor = [Math.cos(degrees_to_radians(angle))* eckeObenVektor[0] - Math.sin(degrees_to_radians(angle))* eckeObenVektor[1], Math.sin(degrees_to_radians(angle))*eckeObenVektor[0] + Math.cos(degrees_to_radians(angle))*eckeObenVektor[1]];
     var eckeUnten = [ursprung[0]+eckeUntenVektor[0],ursprung[1] + eckeUntenVektor[1]];
 
-    //umrechnung degrees to radians 
+    //Umrechnung degrees to radians 
     function degrees_to_radians(degrees){
         var pi = Math.PI;
         return degrees * (pi/180);
@@ -312,13 +281,12 @@ function zeichneIntervall(value){
 //Rotiert das Canvas und somit auch den optimalen Bereich
 //@PARAM: Gewünschte Pedal Position
 function rotateCanvas(value){
-
     var angle;
     var multiplikator = -53;
-    
     var angle = value * multiplikator - dreieckAngle /2;
-    
     
     canvas.style.transform = `rotate(${angle}deg) `;
     
 }
+
+

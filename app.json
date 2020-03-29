@@ -1,3 +1,7 @@
+//Vorgabe von BeamNG
+//Nicht selbst geschrieben, es wurden nur Teile editiert
+// src = https://wiki.beamng.com/My_First_App
+
 {
     "name" : "Pedal",
     "author": "Me",
@@ -11,7 +15,6 @@
        "height": "320px", 
        "top": "200px", 
        "left": "200px" },
+       
        "preserveAspectRatio" : true,
-       
-       
   }
